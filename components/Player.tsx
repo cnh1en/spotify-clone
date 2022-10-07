@@ -3,6 +3,7 @@ import {
 	PauseIcon,
 	PlayIcon,
 	RewindIcon,
+	VolumeOffIcon,
 	VolumeUpIcon,
 } from '@heroicons/react/solid';
 import Image from 'next/image';
@@ -72,6 +73,19 @@ const Player = () => {
 		});
 	};
 
+	const handleMute = async (handle: 'mute' | 'on') => {
+		let volume;
+		if (handle === 'mute') volume = 0;
+		else volume = 100;
+
+		await spotifyApi.setVolume(volume);
+
+		dispatchSongAction({
+			type: SongReducerActionType.SetVolumeSong,
+			payload: volume,
+		});
+	};
+
 	return (
 		<div className="h-24 bg-gradient-to-b from-black to bg-gray-900 grid grid-cols-3 text-xs md:text-base px-2 md:px-8">
 			<div className="flex items-center space-x-4">
@@ -112,7 +126,17 @@ const Player = () => {
 			</div>
 
 			<div className="flex justify-end pr-5 space-x-3 md:space-x-4 items-center">
-				<VolumeUpIcon className="w-4 h-4" />
+				{volume ? (
+					<VolumeUpIcon
+						className="w-4 h-4 cursor-pointer"
+						onClick={() => handleMute('mute')}
+					/>
+				) : (
+					<VolumeOffIcon
+						className="w-4 h-4 cursor-pointer"
+						onClick={() => handleMute('on')}
+					/>
+				)}
 				<input
 					type="range"
 					min={0}
