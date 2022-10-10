@@ -23,13 +23,27 @@ export interface PlaylistContextState {
 	playlists: SpotifyApi.PlaylistObjectSimplified[];
 	selectedPlaylistId: string | null;
 	selectedPlaylist: SpotifyApi.SinglePlaylistResponse | null;
+	isShuffle: boolean;
 }
+
+export enum PlaylistReducerActionType {
+	SetShuffle = 'SetShuffle',
+	SetPlaylist = 'SetPlaylist',
+}
+
+export type PlaylistReducerAction =
+	| {
+			type: PlaylistReducerActionType.SetShuffle;
+			payload: boolean;
+	  }
+	| {
+			type: PlaylistReducerActionType.SetPlaylist;
+			payload: Partial<PlaylistContextState>;
+	  };
 
 export interface IPlaylistContext {
 	playlistContextState: PlaylistContextState;
-	updatePlaylistContextState: (
-		updateObj: Partial<PlaylistContextState>
-	) => void;
+	dispatchPlaylistAction: Dispatch<PlaylistReducerAction>;
 }
 
 export interface SongContextState {
@@ -38,7 +52,7 @@ export interface SongContextState {
 	isPlaying: boolean;
 	volume: number;
 	deviceId: string | null;
-	repeat: false;
+	repeat: 'context' | 'off' | 'track';
 }
 
 export interface ISongContext {

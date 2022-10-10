@@ -9,6 +9,7 @@ import {
 import { useSession } from 'next-auth/react';
 import { usePlaylistContext } from '../context/PlaylistContext';
 import { useSpotify } from '../hooks/useSpotify';
+import { PlaylistReducerActionType } from '../types';
 import IconButton from './IconButton';
 import SpotifyLogo from './icons/Spotify';
 
@@ -21,15 +22,18 @@ const Sidebar = () => {
 
 	const {
 		playlistContextState: { playlists },
-		updatePlaylistContextState,
+		dispatchPlaylistAction,
 	} = usePlaylistContext();
 
 	const setSelectedPlaylist = async (id: string) => {
 		const playlistResponse = await spotifyApi.getPlaylist(id);
 
-		updatePlaylistContextState({
-			selectedPlaylistId: id,
-			selectedPlaylist: playlistResponse.body,
+		dispatchPlaylistAction({
+			type: PlaylistReducerActionType.SetPlaylist,
+			payload: {
+				selectedPlaylistId: id,
+				selectedPlaylist: playlistResponse.body,
+			},
 		});
 
 		console.log('PLAYLIST ID: ', playlistResponse.body.name);

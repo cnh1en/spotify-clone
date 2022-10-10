@@ -1,23 +1,29 @@
 import { useSession } from 'next-auth/react';
 import {
 	createContext,
-	useContext,
 	ReactNode,
-	useState,
+	useContext,
 	useEffect,
+	useReducer,
 } from 'react';
 import { useSpotify } from '../hooks/useSpotify';
-import { IPlaylistContext, PlaylistContextState } from '../types';
+import { playlistReducer } from '../reducers/playlistReducer';
+import {
+	IPlaylistContext,
+	PlaylistContextState,
+	PlaylistReducerActionType,
+} from '../types';
 
 const defaultPlaylistContextState: PlaylistContextState = {
 	playlists: [],
 	selectedPlaylistId: null,
 	selectedPlaylist: null,
+	isShuffle: false,
 };
 
 export const PlaylistContext = createContext<IPlaylistContext>({
 	playlistContextState: defaultPlaylistContextState,
-	updatePlaylistContextState: () => {},
+	dispatchPlaylistAction: () => {},
 });
 
 export const usePlaylistContext = () => useContext(PlaylistContext);
@@ -26,25 +32,20 @@ const PlaylistContextProvider = ({ children }: { children: ReactNode }) => {
 	const { data: session } = useSession();
 	const spotifyApi = useSpotify();
 
-	const [playlistContextState, setPlaylistContextState] = useState(
+	const [playlistContextState, dispatchPlaylistAction] = useReducer(
+		playlistReducer,
 		defaultPlaylistContextState
 	);
-
-	const updatePlaylistContextState = (
-		updateObj: Partial<PlaylistContextState>
-	) => {
-		setPlaylistContextState((previousPlaylistContext) => ({
-			...previousPlaylistContext,
-			...updateObj,
-		}));
-	};
-
 	useEffect(() => {
 		const getUserPlaylists = async () => {
 			const userPlaylistResponse = await spotifyApi.getUserPlaylists();
 			console.log('Playlists: ', userPlaylistResponse.body.items);
-			updatePlaylistContextState({
-				playlists: userPlaylistResponse.body.items,
+
+			dispatchPlaylistAction({
+				type: PlaylistReducerActionType.SetPlaylist,
+				payload: {
+					playlists: userPlaylistResponse.body.items,
+				},
 			});
 		};
 
@@ -55,7 +56,7 @@ const PlaylistContextProvider = ({ children }: { children: ReactNode }) => {
 
 	const playlistContextProviderData = {
 		playlistContextState,
-		updatePlaylistContextState,
+		dispatchPlaylistAction,
 	};
 
 	return (
